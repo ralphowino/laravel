@@ -19,13 +19,14 @@ jobs:
          command: composer global require hirak/prestissimo
       - restore_cache:
          keys:
-          - composer-v1-{{ checksum "site/composer.json" }}
+          - composer-v1-{{ checksum "composer.json" }}
           - composer-v1-
       - run:
          command:  composer install --prefer-dist --ignore-platform-reqs --no-scripts
-         working_directory: ~/project/site
       - save_cache:
-         key: composer-v1-{{ checksum "site/composer.json" }}
+         key: composer-v1-{{ checksum "composer.json" }}
          paths:
           - site/vendor    
-      - run: ./vendor/bin/phpunit
+      - run: 
+         name: Run phpunit
+         command: ./vendor/bin/phpunit
