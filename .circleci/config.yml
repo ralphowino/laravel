@@ -2,18 +2,30 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/php:7.1.5-browsers     
-    working_directory: ~/project
-
+       - image: circleci/php:7.1-node-browsers  
     steps:
-      - checkout
       - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "composer.json" }}
-          - v1-dependencies-
-      - run: composer install -n --prefer-dist
+          key: source-code
+      - checkout
       - save_cache:
+          key: source-code
           paths:
-            - ./vendor
-          key: v1-dependencies-{{ checksum "composer.json" }}      
+            - ~/project
+      - run:
+         name: Update composer to latest version
+         command: sudo composer self-update
+      - run:
+         name: Install prestissimo to speed up composer installs
+         command: composer global require hirak/prestissimo
+      - restore_cache:
+         keys:
+          - composer-v1-{{ checksum "site/composer.json" }}
+          - composer-v1-
+      - run:
+         command:  composer install --prefer-dist --ignore-platform-reqs --no-scripts
+         working_directory: ~/project/site
+      - save_cache:
+         key: composer-v1-{{ checksum "site/composer.json" }}
+         paths:
+          - site/vendor    
       - run: ./vendor/bin/phpunit
